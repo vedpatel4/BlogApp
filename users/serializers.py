@@ -78,6 +78,19 @@ class UserSerializer(serializers.ModelSerializer):
         model = CustomUser
         fields = ['email', 'username', 'name', 'bio', 'picture', 'phone_number']
 
+    def validate_username(self, value):
+        user = self.context['request'].user
+        if CustomUser.objects.filter(username=value).exclude(pk=user.pk).exists():
+            raise serializers.ValidationError("This username is already taken.")
+        return value
+
+    def validate_email(self, value):
+        user = self.context['request'].user
+        if CustomUser.objects.filter(email=value).exclude(pk=user.pk).exists():
+            raise serializers.ValidationError("This email is already taken.")
+        return value
+    
+
 class PasswordChangeSerializer(serializers.Serializer):
     old_password = serializers.CharField(required=True)
     new_password = serializers.CharField(required=True)
@@ -89,5 +102,19 @@ class PasswordChangeSerializer(serializers.Serializer):
         return value
 
     def validate_new_password(self, value):
-        # Add any custom password validation here
+        password_errors = []
+        if len(value) < 8:
+            password_errors.append("Password must be at least 8 characters long.")
+        if not re.findall('\d', value):
+            password_errors.append("Password must contain at least one digit.")
+        if not re.findall('[A-Z]', value):
+            password_errors.append("Password must contain at least one uppercase letter.")
+        if not re.findall('[a-z]', value):
+            password_errors.append("Password must contain at least one lowercase letter.")
+        if not re.findall('[^a-zA-Z0-9]', value):
+            password_errors.append("Password must contain at least one special character.")
+
+        if password_errors:
+            raise serializers.ValidationError({"new_password": password_errors})
+        
         return value
