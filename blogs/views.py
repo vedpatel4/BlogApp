@@ -34,6 +34,9 @@ class BlogUpdateView(UpdateAPIView):
     permission_classes = [IsAuthenticated, IsAuthor]
 
     def perform_update(self, serializer):
+        validated_data = serializer.validated_data
+        if 'status' in validated_data:
+            validated_data.pop('status')
         serializer.save(author=self.request.user)
 
 class BlogDeleteView(DestroyAPIView):

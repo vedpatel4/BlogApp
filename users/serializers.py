@@ -64,7 +64,6 @@ class LoginSerializer(serializers.Serializer):
             raise serializers.ValidationError("Must include 'email' and 'password'.")
 
         user = authenticate(email=email, password=password)
-        print(user)
         if user:
             if not user.is_active:
                 raise serializers.ValidationError("User is deactivated.")
