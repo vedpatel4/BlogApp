@@ -13,7 +13,6 @@ class Tag(models.Model):
     def __str__(self):
         return self.name
     
-
 class Blog(models.Model):
     STATUS_CHOICES = [
     ('draft', 'Draft'),
@@ -24,6 +23,7 @@ class Blog(models.Model):
     publication_date = models.DateTimeField(null=True, blank=True, auto_now_add=False)
     author = models.ForeignKey(User, on_delete=models.CASCADE)
     content = models.TextField()
+    status = models.CharField(max_length=15, choices=STATUS_CHOICES, default='draft')
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True)
     tags = models.ManyToManyField(Tag, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
