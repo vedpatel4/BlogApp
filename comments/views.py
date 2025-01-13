@@ -30,7 +30,8 @@ class CommentDeleteView(DestroyAPIView):
     def get_queryset(self):
         blog_id = self.kwargs['blog_id']
         return Comment.objects.filter(blog_id=blog_id)
-
+    
+    # Only the blog author can delete any comment on their own blog
     def perform_destroy(self, instance):
         if instance.blog.author != self.request.user:
             raise PermissionDenied("You do not have permission to delete this comment.")

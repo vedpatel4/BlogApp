@@ -5,6 +5,8 @@ class IsAuthor(BasePermission):
     def has_object_permission(self, request, view, obj):
         return obj.author == request.user
 
+
+# Custom pagination class
 class BlogPagination(PageNumberPagination):
     page_size = 10
     page_size_query_param = 'page_size'

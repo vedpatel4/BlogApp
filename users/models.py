@@ -16,7 +16,10 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default=False)
     objects = CustomUserManager()
 
+    # Use 'email' as the unique identifier for authentication
     USERNAME_FIELD = 'email'
+
+    # Required fields when creating a user (via createsuperuser)
     REQUIRED_FIELDS = ['username']
 
     def __str__(self):

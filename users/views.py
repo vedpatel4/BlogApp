@@ -3,9 +3,8 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
-from django.contrib.auth import logout, authenticate, login
+from django.contrib.auth import logout, login
 from .serializers import UserSerializer, LoginSerializer, PasswordChangeSerializer, RegisterSerializer
-from .models import CustomUser
 from .utils import get_tokens_for_user
 
 class RegisterView(APIView):

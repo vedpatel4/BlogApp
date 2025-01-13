@@ -12,6 +12,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 
 
     def validate(self, data):
+        # Validate unique email and username
         email = data.get('email')
         username = data.get('username')
         password = data.get('password')
@@ -22,6 +23,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         if CustomUser.objects.filter(username=username).exists():
             raise serializers.ValidationError({"username": "A user with that username already exists."})
 
+        # Validate new password strength
         password_errors = []
         if len(password) < 8:
             password_errors.append("Password must be at least 8 characters long.")
@@ -52,6 +54,9 @@ class RegisterSerializer(serializers.ModelSerializer):
         user.save()
         return user
 
+
+
+# Users can login using email and password
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField(write_only=True)
@@ -72,6 +77,8 @@ class LoginSerializer(serializers.Serializer):
         else:
             raise serializers.ValidationError("Unable to log in with provided credentials.")
 
+
+
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
@@ -90,17 +97,21 @@ class UserSerializer(serializers.ModelSerializer):
         return value
     
 
+
+# PasswordChangeSerializer is specifically designed to handle password changes
 class PasswordChangeSerializer(serializers.Serializer):
     old_password = serializers.CharField(required=True)
     new_password = serializers.CharField(required=True)
 
     def validate_old_password(self, value):
+        # Check if the old password matches the current user's password
         user = self.context['request'].user
         if not user.check_password(value):
             raise serializers.ValidationError("Old password is not correct")
         return value
 
     def validate_new_password(self, value):
+        # Validate new password strength
         password_errors = []
         if len(value) < 8:
             password_errors.append("Password must be at least 8 characters long.")

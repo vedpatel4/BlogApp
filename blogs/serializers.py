@@ -13,6 +13,7 @@ class CategorySerializer(serializers.ModelSerializer):
         model = Category
         fields = ['name']
 
+# Serializer for detailed Blog view, including tags, category, comments, and comment count
 class BlogSerializer(serializers.ModelSerializer):
     tags = TagSerializer(many=True)
     category = CategorySerializer()
@@ -27,9 +28,13 @@ class BlogSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         tags_data = validated_data.pop('tags')
         category_data = validated_data.pop('category')
+
+        # Get or create the category
         category, created = Category.objects.get_or_create(name = category_data["name"])
+
         blog = Blog.objects.create(category=category, **validated_data)
 
+        # Link existing or new tags to the blog
         for tag_data in tags_data:
             tag, created = Tag.objects.get_or_create(name = tag_data["name"])
             blog.tags.add(tag)
@@ -40,11 +45,15 @@ class BlogSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         tags_data = validated_data.pop('tags')
         category_data = validated_data.pop('category')
-        category, created = Category.objects.get_or_create(name = category_data["name"])
+        
+        # Get or create the updated category
+        category, created = Category.objects.get_or_create(name=category_data["name"])
         instance.category = category
+        
+        # Clear and update tags
         instance.tags.clear()
         for tag_data in tags_data:
-            tag, created = Tag.objects.get_or_create(name = tag_data["name"])
+            tag, created = Tag.objects.get_or_create(name=tag_data["name"])
             instance.tags.add(tag)
         
         instance.title = validated_data.get('title', instance.title)
@@ -53,6 +62,8 @@ class BlogSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
+
+# Serializer for listing blogs with minimal details
 class BlogListSerializer(serializers.ModelSerializer):
     category = CategorySerializer()
     tags = TagSerializer(many=True)
@@ -63,6 +74,7 @@ class BlogListSerializer(serializers.ModelSerializer):
         read_only_fields = ['title', 'content', 'tags', 'category', 'status', 'author', 'created_at', 'num_comments']
 
 
+# Serializer to handle blog publishing (status change)
 class BlogPublishSerializer(serializers.ModelSerializer):
     class Meta:
         model = Blog
