@@ -6,6 +6,7 @@ from blogs.models import Blog
 from rest_framework.exceptions import PermissionDenied
 
 class CommentListView(ListAPIView):
+    queryset = Blog.objects.filter(status='published')
     serializer_class = CommentSerializer
 
     def get_queryset(self):
@@ -13,6 +14,7 @@ class CommentListView(ListAPIView):
         return Comment.objects.filter(blog_id=blog_id)
 
 class CommentCreateView(CreateAPIView):
+    queryset = Blog.objects.filter(status='published')
     serializer_class = CommentSerializer
     permission_classes = [IsAuthenticated]
 
