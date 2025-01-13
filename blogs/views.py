@@ -4,7 +4,7 @@ from rest_framework.filters import SearchFilter
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.permissions import IsAuthenticated
 from .models import Blog
-from .serializers import BlogSerializer, BlogListSerializer
+from .serializers import BlogSerializer, BlogListSerializer, BlogPublishSerializer
 from .utils import IsAuthor, BlogPagination
 
 class BlogListView(ListAPIView):
@@ -49,7 +49,7 @@ class BlogDeleteView(DestroyAPIView):
 
 class BlogPublishView(UpdateAPIView):
     queryset = Blog.objects.all()
-    serializer_class = BlogSerializer
+    serializer_class = BlogPublishSerializer
     permission_classes = [IsAuthenticated, IsAuthor]
 
     def perform_update(self, serializer):

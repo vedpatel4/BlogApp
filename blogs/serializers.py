@@ -2,11 +2,13 @@ from rest_framework import serializers
 from .models import Blog, Category, Tag
 from comments.serializers import CommentSerializer
 class TagSerializer(serializers.ModelSerializer):
+    name = serializers.CharField(max_length=50)
     class Meta:
         model = Tag
         fields = ['name']
 
 class CategorySerializer(serializers.ModelSerializer):
+    name = serializers.CharField(max_length=50)
     class Meta:
         model = Category
         fields = ['name']
@@ -14,36 +16,40 @@ class CategorySerializer(serializers.ModelSerializer):
 class BlogSerializer(serializers.ModelSerializer):
     tags = TagSerializer(many=True)
     category = CategorySerializer()
-    comments = CommentSerializer(many = True, read_only=True)
-    num_comments = serializers.IntegerField(source = 'comment_count', read_only=True)
+    comments = CommentSerializer(many=True, read_only=True)
+    num_comments = serializers.IntegerField(source='comment_count', read_only=True)
+
     class Meta:
         model = Blog
-        fields = ['title', 'content', 'category', 'tags', 'status', 'author', 'created_at','comments','num_comments']
+        fields = ['title', 'content', 'category', 'tags', 'status', 'author', 'created_at', 'comments', 'num_comments']
         read_only_fields = ['author', 'created_at', 'comments', 'num_comments']
 
     def create(self, validated_data):
         tags_data = validated_data.pop('tags')
         category_data = validated_data.pop('category')
-        category, _ = Category.objects.get_or_create(**category_data)
-        blog = Blog.objects.create(category=category,**validated_data)
+        category, created = Category.objects.get_or_create(name = category_data["name"])
+        blog = Blog.objects.create(category=category, **validated_data)
+
         for tag_data in tags_data:
-            tag, _ = Tag.objects.get_or_create(**tag_data)
+            tag, created = Tag.objects.get_or_create(name = tag_data["name"])
             blog.tags.add(tag)
+        
         blog.save()
         return blog
 
     def update(self, instance, validated_data):
         tags_data = validated_data.pop('tags')
         category_data = validated_data.pop('category')
-        category, _ = Category.objects.get_or_create(**category_data)
+        category, created = Category.objects.get_or_create(name = category_data["name"])
+        instance.category = category
+        instance.tags.clear()
+        for tag_data in tags_data:
+            tag, created = Tag.objects.get_or_create(name = tag_data["name"])
+            instance.tags.add(tag)
+        
         instance.title = validated_data.get('title', instance.title)
         instance.content = validated_data.get('content', instance.content)
         instance.status = validated_data.get('status', instance.status)
-        instance.tags.clear()
-        for tag_data in tags_data:
-            tag, _ = Tag.objects.get_or_create(**tag_data)
-            instance.tags.add(tag)
-        instance.category = category
         instance.save()
         return instance
 
@@ -55,3 +61,9 @@ class BlogListSerializer(serializers.ModelSerializer):
         model = Blog
         fields = ['title', 'content', 'category', 'tags', 'status', 'author', 'created_at', 'num_comments']
         read_only_fields = ['title', 'content', 'tags', 'category', 'status', 'author', 'created_at', 'num_comments']
+
+
+class BlogPublishSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Blog
+        fields = ['status']
