@@ -6,16 +6,10 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import logout, login
 from .serializers import UserSerializer, LoginSerializer, PasswordChangeSerializer, RegisterSerializer
 from .utils import get_tokens_for_user
-
-class RegisterView(APIView):
-    permission_classes = (AllowAny,)
-
-    def post(self, request):
-        serializer = RegisterSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+from rest_framework.generics import CreateAPIView, RetrieveUpdateAPIView
+class RegisterView(CreateAPIView):
+    serializer_class = RegisterSerializer
+    permission_classes = [AllowAny]
 
 class LoginView(APIView):
     permission_classes = (AllowAny,)
@@ -29,19 +23,13 @@ class LoginView(APIView):
             return Response({'msg': 'Login Success', **auth_data}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class UserProfileView(APIView):
+class UserProfileView(RetrieveUpdateAPIView):
     permission_classes = (IsAuthenticated,)
+    serializer_class = UserSerializer
 
-    def get(self, request):
-        serializer = UserSerializer(request.user)
-        return Response(serializer.data)
-
-    def put(self, request):
-        serializer = UserSerializer(request.user, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def get_object(self):
+        return self.request.user
+    
 
 
 class LogoutView(APIView):
@@ -60,7 +48,7 @@ class LogoutView(APIView):
 class ChangePasswordView(APIView):
     permission_classes = [IsAuthenticated,]
 
-    def post(self, request):
+    def patch(self, request):
         serializer = PasswordChangeSerializer(context={'request': request}, data=request.data)
         if serializer.is_valid():
             request.user.set_password(serializer.validated_data['new_password'])

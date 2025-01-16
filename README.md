@@ -77,8 +77,9 @@ A RESTful API for a blogging system built with Django Rest Framework (DRF). This
 - `POST /api/register/` - Register a new user.
 - `POST /api/login/` - Log in a user.
 - `POST /api/logout/` - Log out the current user.
-- `POST /api/change-password/` - Change the password for the logged-in user.
+- `PATCH /api/change-password/` - Change the password for the logged-in user.
 - `GET /api/profile/` - Retrieve the current user's profile.
+- `PATCH /api/profile/` - Update the current user's profile.
 
 ### Blogs
 
